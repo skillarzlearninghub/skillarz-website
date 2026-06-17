@@ -405,7 +405,7 @@ section { padding: 90px 2rem; }
   <div class="header-inner">
     <a href="#hero" class="logo" aria-label="Skillarz Learning Hub home">
       <img src="assets/logo.png" alt="Skillarz Learning Hub logo"/>
-      <div class="logo-text">Skillarz <medium>Learning Hub</medium></div>
+      <div class="logo-text">Skillarz<small>Learning Hub</small></div>
     </a>
     <nav id="main-nav" role="navigation" aria-label="Primary">
       <a href="#subjects">Subjects</a>
@@ -938,29 +938,42 @@ section { padding: 90px 2rem; }
         </div>
       </div>
 
-      <div class="booking-form">
+      <form class="booking-form" id="booking-form" onsubmit="return submitForm(event)">
         <h3>📅 Book a Free Taster Session</h3>
-        <div class="form-row">
-          <div class="form-group"><label for="parent-name">Parent/Guardian Name *</label><input type="text" id="parent-name" placeholder="Your name" required/></div>
-          <div class="form-group"><label for="contact-email">Email Address *</label><input type="email" id="contact-email" placeholder="your@email.com" required/></div>
+        <div id="form-success" style="display:none;background:rgba(34,166,99,0.1);border:1.5px solid rgba(34,166,99,0.3);border-radius:8px;padding:1rem 1.2rem;margin-bottom:1.2rem;color:#15803d;font-size:0.9rem;line-height:1.55;">
+          <strong>✓ Thank you, your enquiry has been sent!</strong><br/>We will respond to <span id="confirm-email"></span> the same day to arrange your free taster session.
         </div>
-        <div class="form-row">
-          <div class="form-group"><label for="contact-phone">Phone Number</label><input type="tel" id="contact-phone" placeholder="+44 ..."/></div>
-          <div class="form-group"><label for="year-group">Year Group *</label><select id="year-group" required><option value="">Select</option><option>P6</option><option>P7</option><option>S1</option><option>S2</option><option>S3</option><option>S4</option><option>S5</option></select></div>
+        <div id="form-error" style="display:none;background:rgba(229,62,62,0.08);border:1.5px solid rgba(229,62,62,0.25);border-radius:8px;padding:1rem 1.2rem;margin-bottom:1.2rem;color:#b91c1c;font-size:0.9rem;line-height:1.55;">
+          <strong>Something went wrong.</strong><br/><span id="error-msg">Please try again or email us directly at skillarzlearninghub@gmail.com</span>
         </div>
-        <div class="form-row">
-          <div class="form-group"><label for="subject">Subject *</label><select id="subject" required><option value="">Select subject</option><option>English</option><option>Mathematics</option><option>Applications of Mathematics</option><option>Physics</option><option>Chemistry</option><option>Computing Science</option><option>Multiple Subjects</option></select></div>
-          <div class="form-group"><label for="cfe-level">Level</label><select id="cfe-level"><option value="">Select level</option><option>CfE Second Level (P6–P7)</option><option>CfE Third Level (S1–S2)</option><option>CfE Fourth Level (S2–S3)</option><option>National 5</option><option>Higher</option></select></div>
+        <div id="form-fields">
+          <div class="form-row">
+            <div class="form-group"><label for="parent-name">Parent/Guardian Name *</label><input type="text" id="parent-name" name="parent_name" placeholder="Your name" required/></div>
+            <div class="form-group"><label for="contact-email">Email Address *</label><input type="email" id="contact-email" name="contact_email" placeholder="your@email.com" required/></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label for="contact-phone">Phone Number</label><input type="tel" id="contact-phone" name="contact_phone" placeholder="+44 ..."/></div>
+            <div class="form-group"><label for="year-group">Year Group *</label><select id="year-group" name="year_group" required><option value="">Select</option><option>P6</option><option>P7</option><option>S1</option><option>S2</option><option>S3</option><option>S4</option><option>S5</option></select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label for="subject">Subject *</label><select id="subject" name="subject" required><option value="">Select subject</option><option>English</option><option>Mathematics</option><option>Applications of Mathematics</option><option>Physics</option><option>Chemistry</option><option>Computing Science</option><option>Multiple Subjects</option></select></div>
+            <div class="form-group"><label for="cfe-level">Level</label><select id="cfe-level" name="cfe_level"><option value="">Select level</option><option>CfE Second Level (P6–P7)</option><option>CfE Third Level (S1–S2)</option><option>CfE Fourth Level (S2–S3)</option><option>National 5</option><option>Higher</option></select></div>
+          </div>
+          <div class="form-group"><label for="time-slot">Preferred Time Slot</label><select id="time-slot" name="time_slot"><option value="">Select preference</option><option>Weekday — 4–6pm</option><option>Weekday — 6–8pm</option><option>Weekday — 8–10pm</option><option>Saturday morning</option><option>Saturday afternoon</option><option>Saturday evening</option><option>Sunday by arrangement</option></select></div>
+          <div class="form-group"><label for="message">Tell us about your child's needs</label><textarea id="message" name="message" rows="3" placeholder="Main challenges? Upcoming exams? Specific topics?"></textarea></div>
+          <div class="form-group" style="display:flex;align-items:flex-start;gap:0.6rem;">
+            <input type="checkbox" id="gdpr-consent" name="gdpr_consent" value="yes" style="width:auto;margin-top:0.2rem;" required/>
+            <label for="gdpr-consent" style="font-size:0.82rem;color:var(--mid-grey);cursor:pointer;">I consent to Skillarz Learning Hub processing my data to respond to this enquiry, in accordance with the <a href="#footer" style="color:var(--teal);">Privacy Policy</a>. (Required)</label>
+          </div>
+          <!-- Honeypot field for spam bots — invisible to humans -->
+          <div style="position:absolute;left:-9999px;" aria-hidden="true">
+            <label for="_gotcha">Leave this field empty</label>
+            <input type="text" name="_gotcha" id="_gotcha" tabindex="-1" autocomplete="off"/>
+          </div>
+          <button type="submit" class="btn-full" id="submit-btn">Send Enquiry → Free Taster Session</button>
+          <p class="gdpr-note">🔒 Your data is processed lawfully under UK GDPR. We retain enquiry data for 1 year. We will never share your data with third parties for marketing. <a href="#footer">Full Privacy Policy</a>.</p>
         </div>
-        <div class="form-group"><label for="time-slot">Preferred Time Slot</label><select id="time-slot"><option value="">Select preference</option><option>Weekday — 4–6pm</option><option>Weekday — 6–8pm</option><option>Weekday — 8–10pm</option><option>Saturday morning</option><option>Saturday afternoon</option><option>Saturday evening</option><option>Sunday by arrangement</option></select></div>
-        <div class="form-group"><label for="message">Tell us about your child's needs</label><textarea id="message" rows="3" placeholder="Main challenges? Upcoming exams? Specific topics?"></textarea></div>
-        <div class="form-group" style="display:flex;align-items:flex-start;gap:0.6rem;">
-          <input type="checkbox" id="gdpr-consent" style="width:auto;margin-top:0.2rem;" required/>
-          <label for="gdpr-consent" style="font-size:0.82rem;color:var(--mid-grey);cursor:pointer;">I consent to Skillarz Learning Hub processing my data to respond to this enquiry, in accordance with the <a href="#footer" style="color:var(--teal);">Privacy Policy</a>. (Required)</label>
-        </div>
-        <button class="btn-full" onclick="submitForm()">Send Enquiry → Free Taster Session</button>
-        <p class="gdpr-note">🔒 Your data is processed lawfully under UK GDPR. We retain enquiry data for 1 year. We will never share your data with third parties for marketing. <a href="#footer">Full Privacy Policy</a>.</p>
-      </div>
+      </form>
     </div>
   </div>
 </section>
@@ -1063,7 +1076,7 @@ section { padding: 90px 2rem; }
       <div class="footer-col">
         <div class="logo" style="margin-bottom:1rem;">
           <img src="assets/logo.png" alt="Skillarz Learning Hub" style="width:44px;height:44px;border-radius:8px;background:var(--white);padding:4px;"/>
-          <div class="logo-text">Skillarz <medium>Learning Hub</medium></div>
+          <div class="logo-text">Skillarz<small>Learning Hub</small></div>
         </div>
         <p style="font-style:italic;color:rgba(255,255,255,0.55);margin-bottom:0.8rem;font-family:'Playfair Display',serif;">"From Support to Success…Together"</p>
         <p>Online 1-to-1 tuition for Scottish students P6–S5. PVG checked, GTCS registered, SQA aligned.</p>
@@ -1140,10 +1153,47 @@ function toggleSubject(card) {
   if(!isOpen) card.classList.add('open');
 }
 function toggleFaq(item) { item.classList.toggle('open'); }
-function submitForm() {
-  const consent=document.getElementById('gdpr-consent');
-  if(!consent.checked){alert('Please confirm your consent to data processing before submitting.');return;}
-  alert('Thank you for your enquiry! We will respond the same day to arrange your free taster session.');
+async function submitForm(event) {
+  event.preventDefault();
+  const form = document.getElementById('booking-form');
+  const btn = document.getElementById('submit-btn');
+  const successEl = document.getElementById('form-success');
+  const errorEl = document.getElementById('form-error');
+  const fieldsEl = document.getElementById('form-fields');
+  const consent = document.getElementById('gdpr-consent');
+  if (!consent.checked) {
+    errorEl.querySelector('#error-msg').textContent = 'Please confirm your consent to data processing before submitting.';
+    errorEl.style.display = 'block'; successEl.style.display = 'none';
+    return false;
+  }
+  // Disable button, show loading state
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  btn.style.opacity = '0.7';
+  errorEl.style.display = 'none';
+  try {
+    const formData = new FormData(form);
+    const response = await fetch('/api/contact', { method: 'POST', body: formData });
+    const result = await response.json();
+    if (response.ok && result.success) {
+      // Success — hide form, show thank-you message
+      document.getElementById('confirm-email').textContent = formData.get('contact_email');
+      fieldsEl.style.display = 'none';
+      successEl.style.display = 'block';
+      successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      // API returned an error
+      errorEl.querySelector('#error-msg').textContent = result.error || 'Please try again or email us directly at skillarzlearninghub@gmail.com';
+      errorEl.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Send Enquiry → Free Taster Session'; btn.style.opacity = '1';
+    }
+  } catch (err) {
+    // Network or other error
+    errorEl.querySelector('#error-msg').textContent = 'Network error. Please check your connection or email us directly at skillarzlearninghub@gmail.com';
+    errorEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Send Enquiry → Free Taster Session'; btn.style.opacity = '1';
+  }
+  return false;
 }
 window.addEventListener('scroll',()=>{
   const h=document.getElementById('header');

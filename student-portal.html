@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Student Portal | Skillarz Learning Hub</title>
+<meta name="description" content="Skillarz Learning Hub student portal — access timetables, Zoom links, exam schedules, Google Classroom, and progress reports."/>
+<link rel="icon" type="image/png" href="assets/favicon.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --navy: #14213d; --navy-mid: #1d2d5c; --navy-deep: #0c1729;
+  --teal: #0c7b7b; --teal-light: #0fa8a8; --teal-bright: #14d4d4;
+  --saltire: #005eb8; --saltire-lt: #3a88d4;
+  --gold: #d4a020; --success: #22a663; --danger: #e53e3e;
+  --white: #f8fafc; --off-white: #eef2f7; --mid-grey: #6b7fa3; --text: #1a2744;
+  --radius: 12px; --radius-lg: 20px;
+  --shadow: 0 8px 40px rgba(20,33,61,0.13); --shadow-lg: 0 20px 60px rgba(20,33,61,0.2);
+  --transition: 0.28s cubic-bezier(0.4,0,0.2,1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body { font-family: 'DM Sans', sans-serif; background: var(--navy-deep); color: var(--text); line-height: 1.65; overflow-x: hidden; min-height: 100vh; }
+h1,h2,h3,h4,h5 { font-family: 'Playfair Display', serif; line-height: 1.2; }
+a { color: inherit; text-decoration: none; }
+
+.portal-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.portal-bg::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 70% 20%, rgba(12,123,123,0.12) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 50% at 20% 80%, rgba(0,94,184,0.1) 0%, transparent 60%),
+              linear-gradient(160deg, #0c1729 0%, #14213d 50%, #091520 100%);
+}
+.grid-overlay { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px); background-size: 56px 56px; }
+
+.skip-link { position: absolute; top: -100px; left: 0; background: var(--teal); color: #fff; padding: 0.5rem 1rem; z-index: 9999; font-weight: 600; transition: top 0.2s; }
+.skip-link:focus { top: 0; }
+
+/* HEADER */
+#header { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(12,23,41,0.92); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.07); padding: 0 2rem; }
+.header-inner { max-width: 1320px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 68px; }
+.logo { display: flex; align-items: center; gap: 0.65rem; font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; color: var(--white); }
+.logo img { width: 38px; height: 38px; border-radius: 7px; background: var(--white); padding: 3px; }
+.logo small { display: block; font-size: 0.65rem; font-family: 'DM Sans',sans-serif; color: rgba(255,255,255,0.5); font-weight: 400; font-style: italic; }
+.home-btn { display: flex; align-items: center; gap: 0.5rem; color: rgba(255,255,255,0.65); font-size: 0.85rem; font-weight: 500; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); transition: var(--transition); }
+.home-btn:hover { color: var(--teal-bright); border-color: var(--teal); background: rgba(12,123,123,0.08); }
+.header-right { display: flex; align-items: center; gap: 0.8rem; }
+.user-pill { display: flex; align-items: center; gap: 0.6rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 0.35rem 0.9rem 0.35rem 0.4rem; }
+.user-avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, var(--teal), var(--saltire)); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: white; }
+.user-name { font-size: 0.82rem; font-weight: 500; color: rgba(255,255,255,0.8); }
+.logout-btn { background: none; border: none; color: rgba(255,255,255,0.4); cursor: pointer; font-size: 0.78rem; font-family: 'DM Sans', sans-serif; padding: 0.4rem 0.6rem; border-radius: 5px; transition: var(--transition); }
+.logout-btn:hover { color: var(--danger); }
+
+/* LOGIN */
+#login-screen { position: relative; z-index: 1; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 90px 1.5rem 2rem; }
+.login-wrap { width: 100%; max-width: 440px; }
+.login-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(12,123,123,0.18); border: 1px solid rgba(12,123,123,0.35); color: var(--teal-bright); font-size: 0.75rem; font-weight: 600; padding: 0.35rem 0.85rem; border-radius: 20px; margin-bottom: 1.8rem; text-transform: uppercase; letter-spacing: 0.07em; }
+.login-badge span { width: 6px; height: 6px; background: var(--teal-bright); border-radius: 50%; animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1;}50%{opacity:0.3;} }
+.login-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(20px); border-radius: var(--radius-lg); padding: 2.8rem; position: relative; overflow: hidden; animation: fadeUp 0.6s ease both; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+.login-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--teal), var(--saltire), var(--teal-bright)); }
+.login-logo-row { display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; }
+.login-logo-row img { width: 60px; height: 60px; border-radius: 12px; background: var(--white); padding: 6px; }
+.login-title { font-size: 1.9rem; color: var(--white); margin-bottom: 0.3rem; text-align: center; }
+.login-sub { font-size: 0.88rem; color: rgba(255,255,255,0.5); margin-bottom: 1.8rem; text-align: center; }
+.form-group { margin-bottom: 1.3rem; }
+.form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 0.45rem; }
+.form-group input { width: 100%; padding: 0.8rem 1.1rem; background: rgba(255,255,255,0.06); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 0.92rem; color: var(--white); transition: var(--transition); }
+.form-group input::placeholder { color: rgba(255,255,255,0.25); }
+.form-group input:focus { outline: none; border-color: var(--teal); background: rgba(12,123,123,0.1); box-shadow: 0 0 0 3px rgba(12,123,123,0.15); }
+.form-extras { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.remember-label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; color: rgba(255,255,255,0.5); cursor: pointer; }
+.remember-label input { width: auto; }
+.forgot-link { font-size: 0.82rem; color: var(--teal-bright); }
+.btn-login { width: 100%; padding: 0.95rem; border: none; border-radius: 10px; cursor: pointer; background: linear-gradient(135deg, var(--teal), var(--saltire)); color: #fff; font-weight: 700; font-size: 0.98rem; font-family: 'DM Sans', sans-serif; transition: var(--transition); position: relative; overflow: hidden; }
+.btn-login:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(12,123,123,0.45); }
+.login-footer { text-align: center; margin-top: 1.5rem; font-size: 0.8rem; color: rgba(255,255,255,0.35); }
+.login-footer a { color: var(--teal-bright); }
+.demo-accounts { margin-top: 1.8rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius); padding: 1.1rem; }
+.demo-accounts p { font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-bottom: 0.7rem; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 0.08em; }
+.demo-btn { display: block; width: 100%; text-align: left; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 7px; padding: 0.6rem 0.9rem; margin-bottom: 0.5rem; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: rgba(255,255,255,0.65); transition: var(--transition); }
+.demo-btn:last-child { margin-bottom: 0; }
+.demo-btn:hover { border-color: var(--teal); color: var(--teal-bright); background: rgba(12,123,123,0.08); }
+.demo-btn strong { color: var(--white); }
+
+/* DASHBOARD */
+#dashboard-screen { display: none; position: relative; z-index: 1; min-height: 100vh; padding: 80px 1.5rem 3rem; }
+.dashboard-inner { max-width: 1320px; margin: 0 auto; }
+.welcome-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 2rem; padding: 1.5rem 2rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-lg); backdrop-filter: blur(10px); animation: fadeUp 0.5s ease both; }
+.welcome-left { display: flex; align-items: center; gap: 1.2rem; }
+.big-avatar { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, var(--teal), var(--saltire)); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: white; }
+.welcome-text h2 { font-size: 1.3rem; color: var(--white); margin-bottom: 0.1rem; }
+.welcome-text p { font-size: 0.82rem; color: rgba(255,255,255,0.5); }
+.welcome-right { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.next-lesson-pill { display: flex; align-items: center; gap: 0.6rem; background: rgba(12,123,123,0.15); border: 1px solid rgba(12,123,123,0.3); border-radius: 20px; padding: 0.5rem 1rem; font-size: 0.82rem; }
+.next-lesson-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal-bright); animation: blink 1.5s infinite; }
+.next-lesson-pill span { color: var(--teal-bright); font-weight: 600; }
+.next-lesson-pill em { color: rgba(255,255,255,0.55); font-style: normal; }
+.term-pill { background: rgba(0,94,184,0.15); border: 1px solid rgba(0,94,184,0.3); border-radius: 20px; padding: 0.5rem 1rem; font-size: 0.78rem; color: var(--saltire-lt); font-weight: 500; }
+
+.quick-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.8rem; }
+.stat-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius); padding: 1.2rem 1.4rem; position: relative; overflow: hidden; transition: var(--transition); animation: fadeUp 0.5s ease both; }
+.stat-card:hover { background: rgba(255,255,255,0.07); transform: translateY(-2px); }
+.stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.sc-teal::before { background: linear-gradient(90deg, var(--teal), var(--teal-bright)); }
+.sc-saltire::before { background: linear-gradient(90deg, var(--saltire), var(--saltire-lt)); }
+.sc-gold::before { background: linear-gradient(90deg, var(--gold), #fcd34d); }
+.sc-green::before { background: linear-gradient(90deg, var(--success), #6ee7b7); }
+.stat-icon { font-size: 1.4rem; margin-bottom: 0.7rem; }
+.stat-num { font-family: 'Playfair Display', serif; font-size: 1.9rem; font-weight: 900; color: var(--white); line-height: 1; margin-bottom: 0.2rem; }
+.stat-label { font-size: 0.75rem; color: rgba(255,255,255,0.45); }
+
+.dash-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.4rem; }
+.widget { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-lg); overflow: hidden; backdrop-filter: blur(8px); transition: var(--transition); animation: fadeUp 0.5s ease both; }
+.widget:hover { border-color: rgba(255,255,255,0.14); }
+.widget-wide { grid-column: span 2; }
+.widget-full { grid-column: span 3; }
+.widget-header { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 1.4rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.widget-header h3 { font-family: 'DM Mono', monospace; font-size: 0.75rem; font-weight: 500; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.1em; }
+.widget-badge { font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 10px; }
+.wb-live { background: rgba(34,166,99,0.2); color: #6ee7b7; }
+.wb-num { background: rgba(12,123,123,0.2); color: var(--teal-bright); }
+.wb-warn { background: rgba(212,160,32,0.2); color: #fcd34d; }
+.widget-body { padding: 1.2rem 1.4rem; }
+
+.timetable-day { margin-bottom: 1.2rem; }
+.day-label { font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.1em; font-family: 'DM Mono', monospace; margin-bottom: 0.5rem; }
+.lesson-row { display: flex; align-items: center; gap: 0.9rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 0.5rem; transition: var(--transition); }
+.lesson-row:hover { background: rgba(255,255,255,0.07); }
+.lesson-row.today { border-color: rgba(12,123,123,0.4); background: rgba(12,123,123,0.08); }
+.lesson-color { width: 4px; height: 36px; border-radius: 2px; flex-shrink: 0; }
+.lc-eng { background: linear-gradient(to bottom, #be4a78, #e088aa); }
+.lc-maths { background: linear-gradient(to bottom, var(--teal), var(--teal-bright)); }
+.lc-physics { background: linear-gradient(to bottom, var(--saltire), var(--saltire-lt)); }
+.lc-chem { background: linear-gradient(to bottom, #8b5cf6, #c084fc); }
+.lc-comp { background: linear-gradient(to bottom, var(--gold), #fcd34d); }
+.lesson-info { flex: 1; }
+.lesson-subject { font-size: 0.88rem; font-weight: 600; color: var(--white); margin-bottom: 0.15rem; }
+.lesson-topic { font-size: 0.76rem; color: rgba(255,255,255,0.45); }
+.lesson-time { font-family: 'DM Mono', monospace; font-size: 0.76rem; color: rgba(255,255,255,0.4); text-align: right; flex-shrink: 0; }
+.zoom-btn { display: inline-flex; align-items: center; gap: 0.35rem; background: #2d8cff; color: #fff; font-size: 0.73rem; font-weight: 700; padding: 0.3rem 0.75rem; border-radius: 6px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: var(--transition); white-space: nowrap; }
+.zoom-btn:hover { background: #1a78e8; transform: scale(1.03); }
+.zoom-btn:disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.35); cursor: not-allowed; transform: none; }
+.today-tag { font-size: 0.68rem; font-weight: 700; background: rgba(12,123,123,0.25); color: var(--teal-bright); padding: 0.15rem 0.5rem; border-radius: 4px; }
+.lesson-actions { display: flex; gap: 0.4rem; align-items: center; }
+
+.exam-item { display: flex; align-items: center; gap: 1rem; padding: 0.85rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.exam-item:last-child { border-bottom: none; }
+.exam-countdown { min-width: 54px; text-align: center; flex-shrink: 0; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 0.4rem 0.3rem; }
+.exam-countdown .days { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 900; line-height: 1; }
+.exam-countdown .days.urgent { color: var(--gold); }
+.exam-countdown .days.normal { color: var(--saltire-lt); }
+.exam-countdown .days-label { font-size: 0.62rem; color: rgba(255,255,255,0.35); text-transform: uppercase; font-family: 'DM Mono', monospace; }
+.exam-info { flex: 1; }
+.exam-name { font-size: 0.88rem; font-weight: 600; color: var(--white); margin-bottom: 0.15rem; }
+.exam-date-str { font-size: 0.76rem; color: rgba(255,255,255,0.45); }
+.exam-type { font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 5px; }
+.et-sqa { background: rgba(0,94,184,0.2); color: var(--saltire-lt); }
+.et-mock { background: rgba(212,160,32,0.2); color: #fcd34d; }
+.et-test { background: rgba(139,92,246,0.2); color: #c084fc; }
+
+.classroom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+.classroom-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 1rem 1.1rem; cursor: pointer; transition: var(--transition); position: relative; overflow: hidden; }
+.classroom-card::after { content: '→'; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.2); transition: var(--transition); font-size: 1rem; }
+.classroom-card:hover { border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.07); transform: translateY(-2px); }
+.classroom-card:hover::after { color: var(--teal-bright); right: 0.8rem; }
+.cc-icon { font-size: 1.3rem; margin-bottom: 0.5rem; }
+.cc-name { font-size: 0.88rem; font-weight: 600; color: var(--white); margin-bottom: 0.2rem; }
+.cc-count { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+.cc-new { position: absolute; top: 0.6rem; right: 0.6rem; background: var(--teal); color: white; font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 4px; }
+
+.progress-subject { margin-bottom: 1.2rem; }
+.progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+.progress-name { font-size: 0.85rem; font-weight: 600; color: var(--white); }
+.progress-pct { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; }
+.progress-bar { height: 7px; background: rgba(255,255,255,0.07); border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 4px; }
+.pf-eng { background: linear-gradient(90deg, #be4a78, #e088aa); }
+.pf-maths { background: linear-gradient(90deg, var(--teal), var(--teal-bright)); }
+.pf-physics { background: linear-gradient(90deg, var(--saltire), var(--saltire-lt)); }
+.pf-chem { background: linear-gradient(90deg, #8b5cf6, #c084fc); }
+.progress-meta { display: flex; justify-content: space-between; margin-top: 0.3rem; }
+.progress-stage { font-size: 0.72rem; color: rgba(255,255,255,0.35); }
+.progress-change { font-size: 0.72rem; font-weight: 600; color: #6ee7b7; }
+
+.activity-item { display: flex; align-items: flex-start; gap: 0.9rem; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.activity-item:last-child { border-bottom: none; }
+.activity-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; margin-top: 0.1rem; }
+.ai-teal { background: rgba(12,123,123,0.2); }
+.ai-saltire { background: rgba(0,94,184,0.2); }
+.ai-gold { background: rgba(212,160,32,0.2); }
+.ai-green { background: rgba(34,166,99,0.2); }
+.activity-text p { font-size: 0.84rem; color: rgba(255,255,255,0.75); line-height: 1.45; }
+.activity-text p strong { color: var(--white); }
+.activity-time { font-size: 0.72rem; color: rgba(255,255,255,0.3); margin-top: 0.15rem; font-family: 'DM Mono', monospace; }
+
+.portal-footer { position: relative; z-index: 1; border-top: 1px solid rgba(255,255,255,0.06); padding: 1.5rem 2rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; max-width: 1320px; margin: 2rem auto 0; }
+.portal-footer p { font-size: 0.78rem; color: rgba(255,255,255,0.3); }
+.portal-footer a { color: var(--teal-bright); font-size: 0.78rem; }
+.footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+
+.toast-container { position: fixed; top: 80px; right: 1.5rem; z-index: 9999; display: flex; flex-direction: column; gap: 0.6rem; }
+.toast { background: rgba(20,25,40,0.96); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 0.85rem 1.2rem; display: flex; align-items: center; gap: 0.7rem; min-width: 280px; max-width: 360px; animation: slideIn 0.35s ease; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+@keyframes slideIn { from { opacity:0; transform:translateX(30px); } to { opacity:1; transform:translateX(0); } }
+.toast.success { border-color: rgba(34,166,99,0.4); }
+.toast.info { border-color: rgba(12,123,123,0.4); }
+.toast-icon { font-size: 1.1rem; flex-shrink: 0; }
+.toast-text { font-size: 0.84rem; color: rgba(255,255,255,0.85); }
+.toast-text strong { display: block; color: var(--white); font-size: 0.86rem; margin-bottom: 0.1rem; }
+
+@media (max-width: 1100px) { .dash-grid { grid-template-columns: 1fr 1fr; } .widget-wide,.widget-full { grid-column: span 2; } .quick-stats { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 700px) { .dash-grid { grid-template-columns: 1fr; } .widget-wide, .widget-full { grid-column: span 1; } .classroom-grid { grid-template-columns: 1fr; } .welcome-bar { flex-direction: column; align-items: flex-start; } }
+@media (max-width: 480px) { #dashboard-screen { padding: 76px 1rem 2rem; } .login-card { padding: 2rem 1.5rem; } }
+</style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<header id="header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <img src="assets/logo.png" alt="Skillarz Learning Hub"/>
+      <div>Skillarz <medium>Learning Hub</medium></div>
+    </a>
+    <div class="header-right">
+      <a href="index.html" class="home-btn">← Back to Home</a>
+      <div id="user-pill" class="user-pill" style="display:none;">
+        <div class="user-avatar">E</div>
+        <span class="user-name">Demo Skillarz</span>
+      </div>
+      <button id="logout-btn" onclick="logout()" class="logout-btn" style="display:none;">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<div class="portal-bg"><div class="grid-overlay"></div></div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<main id="main-content">
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-wrap">
+    <div class="login-badge"><span></span> Secure Student Portal</div>
+    <div class="login-card">
+      <div class="login-logo-row"><img src="assets/Skillarz_logo.jpg" alt="Skillarz Learning Hub"/></div>
+      <h1 class="login-title">Student Login</h1>
+      <p class="login-sub">Access your timetable, resources, and progress reports</p>
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="student@school.ac.uk" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <div class="form-extras">
+        <label class="remember-label"><input type="checkbox" id="remember"/> Remember me</label>
+        <a href="#" class="forgot-link">Forgot password?</a>
+      </div>
+      <button class="btn-login" onclick="doLogin()">Sign in to Portal →</button>
+      <p class="login-footer">🔒 Protected by UK GDPR. <a href="index.html#footer">Privacy Policy</a> · <a href="index.html#faq">Safeguarding</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard-screen">
+  <div class="dashboard-inner">
+
+    <div class="welcome-bar">
+      <div class="welcome-left">
+        <div class="big-avatar">E</div>
+        <div class="welcome-text">
+          <h2>Welcome back, Skillarz Champ 👋</h2>
+          <p>S4 · National 5 · <span style="color:var(--teal-bright)">3 subjects</span></p>
+        </div>
+      </div>
+      <div class="welcome-right">
+        <div class="next-lesson-pill"><div class="dot"></div><span>Next lesson:</span><em>Maths — Today 17:00</em></div>
+        <div class="term-pill">🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scottish Term 3 · Spring</div>
+      </div>
+    </div>
+
+    <div class="quick-stats">
+      <div class="stat-card sc-teal"><div class="stat-icon">📚</div><div class="stat-num">24</div><div class="stat-label">Sessions completed</div></div>
+      <div class="stat-card sc-saltire"><div class="stat-icon">📝</div><div class="stat-num">3</div><div class="stat-label">Exams in next 30 days</div></div>
+      <div class="stat-card sc-gold"><div class="stat-icon">📋</div><div class="stat-num">7</div><div class="stat-label">Assignments pending</div></div>
+      <div class="stat-card sc-green"><div class="stat-icon">📈</div><div class="stat-num">+12%</div><div class="stat-label">Progress this month</div></div>
+    </div>
+
+    <div class="dash-grid">
+
+      <div class="widget widget-wide">
+        <div class="widget-header"><h3>📅 Weekly Timetable</h3><span class="widget-badge wb-live">● This Week</span></div>
+        <div class="widget-body">
+          <div class="timetable-day">
+            <div class="day-label">Monday</div>
+            <div class="lesson-row today">
+              <div class="lesson-color lc-maths"></div>
+              <div class="lesson-info"><div class="lesson-subject">Mathematics — National 5</div><div class="lesson-topic">Trigonometry: Sin/Cos rules</div></div>
+              <div class="lesson-time">17:00–18:00<br><span style="font-size:0.65rem;color:rgba(255,255,255,0.25)">GMT</span></div>
+              <div class="lesson-actions"><span class="today-tag">Today</span><button class="zoom-btn" onclick="openZoom()">🎥 Join</button></div>
+            </div>
+          </div>
+          <div class="timetable-day">
+            <div class="day-label">Wednesday</div>
+            <div class="lesson-row">
+              <div class="lesson-color lc-physics"></div>
+              <div class="lesson-info"><div class="lesson-subject">Physics — National 5</div><div class="lesson-topic">Waves & Radiation</div></div>
+              <div class="lesson-time">18:00–19:00<br><span style="font-size:0.65rem;color:rgba(255,255,255,0.25)">GMT</span></div>
+              <div class="lesson-actions"><button class="zoom-btn" disabled>🎥 Soon</button></div>
+            </div>
+          </div>
+          <div class="timetable-day">
+            <div class="day-label">Friday</div>
+            <div class="lesson-row">
+              <div class="lesson-color lc-chem"></div>
+              <div class="lesson-info"><div class="lesson-subject">Chemistry — National 5</div><div class="lesson-topic">Nature's Chemistry: alcohols</div></div>
+              <div class="lesson-time">19:00–20:00<br><span style="font-size:0.65rem;color:rgba(255,255,255,0.25)">GMT</span></div>
+              <div class="lesson-actions"><button class="zoom-btn" disabled>🎥 Soon</button></div>
+            </div>
+          </div>
+          <div class="timetable-day">
+            <div class="day-label">Saturday</div>
+            <div class="lesson-row">
+              <div class="lesson-color lc-eng"></div>
+              <div class="lesson-info"><div class="lesson-subject">English — National 5</div><div class="lesson-topic">Critical Essay technique</div></div>
+              <div class="lesson-time">11:00–12:00<br><span style="font-size:0.65rem;color:rgba(255,255,255,0.25)">GMT</span></div>
+              <div class="lesson-actions"><button class="zoom-btn" disabled>🎥 Soon</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget">
+        <div class="widget-header"><h3>📝 Upcoming Exams</h3><span class="widget-badge wb-warn">3 upcoming</span></div>
+        <div class="widget-body">
+          <div class="exam-item">
+            <div class="exam-countdown"><div class="days urgent">12</div><div class="days-label">days</div></div>
+            <div class="exam-info"><div class="exam-name">Maths N5 — Mock Exam</div><div class="exam-date-str">📅 9 May 2025, 09:00</div></div>
+            <span class="exam-type et-mock">Mock</span>
+          </div>
+          <div class="exam-item">
+            <div class="exam-countdown"><div class="days normal">23</div><div class="days-label">days</div></div>
+            <div class="exam-info"><div class="exam-name">Physics N5 — SQA Diet</div><div class="exam-date-str">📅 20 May 2025</div></div>
+            <span class="exam-type et-sqa">SQA</span>
+          </div>
+          <div class="exam-item">
+            <div class="exam-countdown"><div class="days normal">25</div><div class="days-label">days</div></div>
+            <div class="exam-info"><div class="exam-name">Chemistry N5 — SQA</div><div class="exam-date-str">📅 22 May 2025</div></div>
+            <span class="exam-type et-sqa">SQA</span>
+          </div>
+          <div class="exam-item">
+            <div class="exam-countdown"><div class="days normal">7</div><div class="days-label">days</div></div>
+            <div class="exam-info"><div class="exam-name">Maths — Class Test</div><div class="exam-date-str">📅 2 May 2025</div></div>
+            <span class="exam-type et-test">Test</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget">
+        <div class="widget-header"><h3>📚 Google Classroom</h3><span class="widget-badge wb-num">3 new items</span></div>
+        <div class="widget-body">
+          <div class="classroom-grid">
+            <div class="classroom-card" onclick="openClassroom('maths')">
+              <div class="cc-new">2 new</div><div class="cc-icon">📐</div>
+              <div class="cc-name">Mathematics N5</div><div class="cc-count">12 materials · 3 assignments</div>
+            </div>
+            <div class="classroom-card" onclick="openClassroom('physics')">
+              <div class="cc-new">1 new</div><div class="cc-icon">⚛️</div>
+              <div class="cc-name">Physics N5</div><div class="cc-count">9 materials · 2 assignments</div>
+            </div>
+            <div class="classroom-card" onclick="openClassroom('chem')">
+              <div class="cc-icon">🧪</div>
+              <div class="cc-name">Chemistry N5</div><div class="cc-count">11 materials · 4 assignments</div>
+            </div>
+            <div class="classroom-card" onclick="openClassroom('english')">
+              <div class="cc-icon">📖</div>
+              <div class="cc-name">English N5</div><div class="cc-count">8 materials · 1 assignment</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget">
+        <div class="widget-header"><h3>📈 Progress Overview</h3><span class="widget-badge wb-num">This month</span></div>
+        <div class="widget-body">
+          <div class="progress-subject">
+            <div class="progress-header"><span class="progress-name">Mathematics N5</span><span class="progress-pct" style="color:var(--teal-bright)">78%</span></div>
+            <div class="progress-bar"><div class="progress-fill pf-maths" style="width:78%"></div></div>
+            <div class="progress-meta"><span class="progress-stage">SQA N5 syllabus</span><span class="progress-change">↑ +8% this month</span></div>
+          </div>
+          <div class="progress-subject">
+            <div class="progress-header"><span class="progress-name">Physics N5</span><span class="progress-pct" style="color:var(--saltire-lt)">65%</span></div>
+            <div class="progress-bar"><div class="progress-fill pf-physics" style="width:65%"></div></div>
+            <div class="progress-meta"><span class="progress-stage">SQA N5 syllabus</span><span class="progress-change">↑ +5% this month</span></div>
+          </div>
+          <div class="progress-subject">
+            <div class="progress-header"><span class="progress-name">Chemistry N5</span><span class="progress-pct" style="color:#c084fc">82%</span></div>
+            <div class="progress-bar"><div class="progress-fill pf-chem" style="width:82%"></div></div>
+            <div class="progress-meta"><span class="progress-stage">SQA N5 syllabus</span><span class="progress-change">↑ +12% this month</span></div>
+          </div>
+          <div class="progress-subject">
+            <div class="progress-header"><span class="progress-name">English N5</span><span class="progress-pct" style="color:#e088aa">71%</span></div>
+            <div class="progress-bar"><div class="progress-fill pf-eng" style="width:71%"></div></div>
+            <div class="progress-meta"><span class="progress-stage">SQA N5 syllabus</span><span class="progress-change">↑ +6% this month</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="widget">
+        <div class="widget-header"><h3>🕐 Recent Activity</h3></div>
+        <div class="widget-body">
+          <div class="activity-item">
+            <div class="activity-icon ai-teal">📐</div>
+            <div class="activity-text"><p><strong>New assignment posted:</strong> Trigonometry Practice Set 4 — due Friday 2 May</p><div class="activity-time">2 hours ago</div></div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon ai-green">✅</div>
+            <div class="activity-text"><p><strong>Session completed:</strong> Chemistry — Rates of Reaction. Notes uploaded.</p><div class="activity-time">Yesterday, 18:02</div></div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon ai-saltire">📊</div>
+            <div class="activity-text"><p><strong>Progress report updated</strong> — Available for parent and student</p><div class="activity-time">25 Apr, 09:15</div></div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-icon ai-gold">📝</div>
+            <div class="activity-text"><p><strong>Exam reminder added:</strong> Maths N5 Mock — 9 May. Revision checklist uploaded.</p><div class="activity-time">24 Apr, 14:30</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="portal-footer">
+      <p>© 2025 Skillarz Learning Hub · <a href="index.html#footer">Privacy</a> · <a href="index.html#faq">Safeguarding</a> · UK GDPR Compliant</p>
+      <div class="footer-links">
+        <a href="index.html">← Home</a>
+        <a href="index.html#booking">Book Session</a>
+        <a href="index.html#resources">Resources</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</main>
+
+<script>
+function fillDemo(email) {
+  document.getElementById('email').value = email;
+  document.getElementById('password').value = 'demo1234';
+}
+function doLogin() {
+  const email = document.getElementById('email').value.trim();
+  const pass = document.getElementById('password').value.trim();
+  if (!email || !pass) { showToast('⚠️','Missing details','Please enter your email and password.','info'); return; }
+  if (email != "Demo" && pass != "demo1234") { showToast('⚠️','Wrong Credentials','Please enter correct email and password.','info'); return; }
+  const btn = document.querySelector('.btn-login');
+  btn.textContent = 'Signing in…'; btn.style.opacity = '0.7';
+  setTimeout(() => {
+    showDashboard();
+    showToast('✅','Signed in','Welcome back! Today you have a Maths session at 17:00.','success');
+  }, 900);
+}
+function showDashboard() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard-screen').style.display = 'block';
+  document.getElementById('user-pill').style.display = 'flex';
+  document.getElementById('logout-btn').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function logout() {
+  document.getElementById('dashboard-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('user-pill').style.display = 'none';
+  document.getElementById('logout-btn').style.display = 'none';
+  document.getElementById('email').value = '';
+  document.getElementById('password').value = '';
+  document.querySelector('.btn-login').textContent = 'Sign in to Portal →';
+  document.querySelector('.btn-login').style.opacity = '1';
+}
+function openZoom() {
+  showToast('🎥','Opening Zoom','Launching your session. Have your materials ready!','info');
+  setTimeout(() => window.open('https://zoom.us','_blank'), 800);
+}
+function openClassroom(s) {
+  const names = { maths:'Mathematics N5', physics:'Physics N5', chem:'Chemistry N5', english:'English N5' };
+  showToast('📚','Opening Classroom','Launching ' + (names[s]||s) + '.','info');
+  setTimeout(() => window.open('https://classroom.google.com','_blank'), 800);
+}
+function showToast(icon, title, msg, type) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.innerHTML = `<span class="toast-icon">${icon}</span><div class="toast-text"><strong>${title}</strong>${msg}</div>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    toast.style.opacity = '0'; toast.style.transform = 'translateX(20px)';
+    setTimeout(() => toast.remove(), 400);
+  }, 3800);
+}
+</script>
+</body>
+</html>
